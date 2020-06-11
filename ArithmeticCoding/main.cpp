@@ -31,9 +31,13 @@ int main()
 	abc = get_alphabet(text);
 	int* freq;
 	freq = getFrequency(text, abc);
-	for (int i = 0; i < abc.size(); i++)
+	/*cout << abc << endl;
+	for (int i = 0; i < abc.size()+1; i++)
 	{
-		cout << abc[i] << "- " << freq[i] << endl;
+		cout << freq[i] << endl;
 	}
+	*/
+	string encoded = encode(text, freq, abc);
+	cout << encoded << endl;
 	return 0;
 }
