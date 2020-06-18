@@ -1,55 +1,41 @@
 #include"coding.h"
-std::string get_alphabet(std::string input)
-{
-	std::string alphabet;
-	for (int i = 0; i < input.size(); i++)
-	{
-		int j;
-		for (j = 0; j < alphabet.size(); j++)
-		{
-			if (alphabet[j] == input[i])
-			{
-				break;
-			}
-		}
-		if (j >= alphabet.size())
-		{
-			alphabet.push_back(input[i]);
-		}
 
-	}
-	return alphabet;
+bool cmp(const std::pair<char, int>& first,const std::pair<char, int>& second)
+{
+	return first.second > second.second;
 }
-
-int* get_frequency(std::string input, std::string alphabet)
+std::vector< std::pair< char, int > > get_freq(std::string text)
 {
-	int* helper = new int[alphabet.size()];
-	helper = new int[alphabet.size()];
-	for (int i = 0; i < alphabet.size(); i++)
+	std::map<char, int> freq;
+	for (char b : text)
 	{
-		helper[i] = 0;
+		freq[b]++;
 	}
-	for (int j = 0; j < alphabet.size(); j++)
-	{
-		for (int i = 0; i < input.size(); i++)
-		{
-			if (alphabet[j] == input[i])
-			{
-				helper[j]++;
-			}
-		}
-		if (j > 0)
-		{
-			helper[j] += helper[j - 1];
-		}
-	}
-	int* freq = new int[alphabet.size() + 1];
+	std::vector< std::pair< char, int > > vec(freq.begin(), freq.end());
+	std::sort(vec.begin(), vec.end(), cmp);
+	return vec;
+}
+int* get_accumulated_freq(std::vector< std::pair< char, int > > vec)
+{
+	int* freq = new int[vec.size() + 1];
 	freq[0] = 0;
-	for (int i = 1; i < alphabet.size() + 1; i++)
+	int i = 1;
+	for (auto p : vec)
 	{
-		freq[i] = helper[i - 1];
+		freq[i] = freq[i - 1] + p.second;
+		i++;
 	}
 	return freq;
+}
+std::string alphabet(std::vector< std::pair< char, int > > vec)
+{
+	std::string abc = "";
+	for (auto p : vec)
+	{
+		char b = p.first;
+		abc += b;
+	}
+	return abc;
 }
 int get_index(char symbol, std::string alphabet)
 {
@@ -61,10 +47,10 @@ int get_index(char symbol, std::string alphabet)
 }
 void add_bit(bool bit, int bitsToFollow, std::string& code)
 {
-	code.push_back(bit + 48);
+	code.push_back(bit+48);
 	while (bitsToFollow > 0)
 	{
-		code.push_back(!bit + 48);
+		code.push_back(!bit+48);
 		bitsToFollow--;
 	}
 }

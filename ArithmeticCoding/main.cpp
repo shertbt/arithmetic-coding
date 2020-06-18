@@ -161,14 +161,23 @@ int main()
 			cin >> filename_out;
 			string text = "";
 			text = read_text(filename);
+			vector< std::pair< char, int > > freq = get_freq(text);
+			/*for (auto p : freq) 
+			std::cout << p.first << ' ' << p.second << std::endl;
+			
+			for (int i = 0; i < freq.size() + 1; i++)
+				cout << frequency[i] << endl;*/
+			int* frequency = get_accumulated_freq(freq);
 			string abc;
-			abc = get_alphabet(text);
-			int* freq;
-			freq = get_frequency(text, abc);
-			string encoded = encode(text, freq, abc);
+			abc = alphabet(freq);
+			//int* freq;
+			//freq = get_frequency(text, abc);
+			
+			string encoded = encode(text, frequency, abc);
+			//cout << encoded << endl;
 			string message = getBufferFromString(encoded);
 			int dif = message.size() * 8 - encoded.size();
-			write_encoded(filename_out,message,abc,freq,dif);
+			write_encoded(filename_out,message,abc,frequency,dif);
 			break;
 		}
 
@@ -185,7 +194,7 @@ int main()
 			int d;
 			string en = read_encoded(filename, alphabet, frequency,d);
 			string bit_en = getStringFromBuffer(en,d);
-			string decoded = decode(bit_en, alphabet , frequency);
+			string decoded = decode(bit_en, alphabet, frequency);
 			write_decoded(filename_out, decoded);
 			break;
 		}
