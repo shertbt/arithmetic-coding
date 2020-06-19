@@ -1,6 +1,6 @@
-#include"coding.h"
+#include"coder.h"
 
-bool cmp(const std::pair<char, int>& first,const std::pair<char, int>& second)
+bool cmp(const std::pair<char, int>& first, const std::pair<char, int>& second)
 {
 	return first.second > second.second;
 }
@@ -42,15 +42,15 @@ int get_index(char symbol, std::string alphabet)
 	int i = 0;
 	for (; i < alphabet.size(); i++)
 	{
-		if (symbol == alphabet.at(i)) return (i+1);
+		if (symbol == alphabet.at(i)) return (i + 1);
 	}
 }
 void add_bit(bool bit, int bitsToFollow, std::string& code)
 {
-	code.push_back(bit+48);
+	code.push_back(bit + 48);
 	while (bitsToFollow > 0)
 	{
-		code.push_back(!bit+48);
+		code.push_back(!bit + 48);
 		bitsToFollow--;
 	}
 }
@@ -70,7 +70,7 @@ std::string encode(std::string input, int* freq, std::string alphabet)
 	std::string code;
 	int sym = 0;
 	int i = 0;
-	for ( i = 0; i < length;)
+	for (i = 0; i < length;)
 	{
 		int symbol = get_index(input.at(i), alphabet);
 		i++;
@@ -104,99 +104,56 @@ std::string encode(std::string input, int* freq, std::string alphabet)
 		}
 
 	}
-	bitsToFollow=1;
-	if (l[i] < FIRST_QTR) add_bit(1, bitsToFollow, code);  
+	bitsToFollow = 1;
+	if (l[i] < FIRST_QTR) add_bit(1, bitsToFollow, code);
 	else add_bit(0, bitsToFollow, code);
 	return code;
 }
 
-unsigned short int read16bit(std::string code)
+std::string getBufferFromString(std::string bitstring)
 {
-	int i;
-	unsigned short int value = 0;
-	for (i = 0; i < 16; i++)
-	{
-		if (i == code.size())
-		{
-			return value;
-		}
-		if ('1' == code[i])
-		{
-			value = value | (1 << (15 - i));
-		}
-	}
-	return value;
+	std::string result = "";
+	int count = 0;
+	unsigned char byte = 0;
 
+	for (int i = 0; i < bitstring.size(); i++)
+	{
+		byte = (byte << 1) | (bitstring[i] - '0');
+		count++;
+		if (count == 8)
+		{
+			count = 0;
+			result += byte;
+			byte = 0;
+		}
+
+	}
+	if (count != 0)
+	{
+		while (count != 8)
+		{
+			byte = (byte << 1);
+			count++;
+		}
+		result += byte;
+	}
+	return result;
 }
 
-unsigned short int readbit(char s)
+void write_encoded(std::string filename, std::string text, std::string alphabet, int* freq, int dif)
 {
-	if ('1' == s)
+	std::fstream tab(filename, std::ios::binary | std::ios::out);
+	int alphabet_size = alphabet.size();
+	tab.write((char*)&dif, sizeof(char));
+	tab.write((char*)&alphabet_size, sizeof(int));
+	for (int i = 0, j = 1; i < alphabet_size, j < alphabet_size + 1; i++, j++)
 	{
-		return 1;
+		tab.write((char*)&alphabet[i], sizeof(char));
+		tab.write((char*)&freq[j], sizeof(int));
 	}
-	return 0;
-}
-
-std::string decode(std::string code, std::string alphabet, int* frequency)
-{
-	unsigned short int* h = new unsigned short int[code.length()];
-	unsigned short int* l = new unsigned short int[code.length()];
-	l[0] = 0;
-	h[0] = 65535;
-	unsigned int del = frequency[alphabet.size()];
-	unsigned short int FIRST_QTR = (h[0] + 1) / 4;
-	unsigned short int HALF = 2 * FIRST_QTR;
-	unsigned short int THIRD_QTR = 3 * FIRST_QTR;
-
-	std::string output;
-	unsigned short int value;
-	int codeIdx = 16;
-	value = read16bit(code);
-	unsigned short int newBit = 0;
-	for (int i = 1; i < del+1; i++)
+	for (int i = 0; i < text.size(); i++)
 	{
-		unsigned int freq = ((value - l[i - 1] + 1) * del - 1) / (h[i - 1] - l[i - 1] + 1);
-		int j;
-		for (j = 1; frequency[j] <= freq; j++) {};
-		l[i] = l[i - 1] + ((h[i - 1] - l[i - 1] + 1) * frequency[j - 1]) / del;
-		h[i] = l[i - 1] + ((h[i - 1] - l[i - 1] + 1) * frequency[j]) / del - 1;
-		
-		
-
-		for (;;)
-		{
-			if (h[i] < HALF)
-				;
-			else if (l[i] >= HALF)
-			{
-				value -= HALF;
-				l[i] -= HALF;
-				h[i] -= HALF;
-			}
-			else if ((l[i] >= FIRST_QTR) && (h[i] < THIRD_QTR))
-			{
-				value -= FIRST_QTR;
-				l[i] -= FIRST_QTR;
-				h[i] -= FIRST_QTR;
-			}
-			else break;
-
-			l[i] = 2 * l[i];
-			h[i] = 2 * h[i] + 1;
-
-
-			if (codeIdx < code.length())
-			{
-				newBit = readbit(code.at(codeIdx++));
-			}
-			
-			value += value + newBit;
-
-
-		}
-
-		output.push_back(alphabet.at(j - 1));
+		tab << text[i];
 	}
-	return output;
+	tab.close();
 }
